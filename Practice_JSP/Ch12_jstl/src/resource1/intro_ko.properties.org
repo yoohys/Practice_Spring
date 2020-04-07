@@ -1,0 +1,4 @@
+TITLE= 우리의 의미
+GREETING= 이 사이트를 방문해 주셔서 감사합니다.
+BODY = 우리는 인증된 소프트웨어 회사입니다.
+COMPANY_NAME= Duke 회사.

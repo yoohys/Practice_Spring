@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.w3.org/1999/xhtml">
+<!--생략해도 정상동작하는 XHTML 문서를 위한 네임스페이스 명시-->
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Title</title>
+    <link rel="stylesheet" th:href="@{/css/app.css}">
+    <link rel="stylesheet" th:href="@{/css/board.css}">
+</head>
+<body>
+<div th:insert="common/header.html" id="header"></div>
+<!--헤더와 푸터처럼 다른 페이지를 현재 페이지에 삽입하는 역할-->
+<a th:href="@{/post}">글쓰기</a>
+<!--localhost:8080/post의 경로-->
+<table>
+    <thead>
+    <tr>
+        <th class="one wide">번호</th>
+        <th class="ten wide">글제목</th>
+        <th class="two wide">작성자</th>
+        <th class="three wide">작성일</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    <!-- CONTENTS !-->
+    <tr th:each="board : ${boardList}">
+        <!--thymeleaf에서 반복문을 사용하는 부분입니다.       -->
+        <td>
+            <span th:text="${board.id}"></span>
+        </td>
+        <td>
+            <a th:href="@{'/post/' + ${board.id}}">
+                <span th:text="${board.title}"></span>
+            </a>
+        </td>
+        <td>
+            <span th:text="${board.writer}"></span>
+        </td>
+        <td>
+            <span th:text="${#temporals.format(board.createdDate, 'yyyy-MM-dd HH:mm')}"></span>
+            <!--        메서드를 사용하여 날짜를 포맷팅하는 방법-->
+        </td>
+    </tr>
+    </tbody>
+</table>
+<!--페이징 영역-->
+<div>
+    <span th:each="pageNum : ${pageList}" th:inline="text">
+        <a th:href="@{'/?page=' + ${pageNum}}">[[${pageNum}]]</a>
+    </span>
+</div>
+<!-- 검색 form -->
+<form action="/board/search" method="GET">
+    <div>
+        <input name="keyword" type="text" placeholder="검색어를 입력해주세요">
+    </div>
+
+    <button class="button success">검색하기</button>
+</form>
+<div id="chart"></div>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+<script th:src="@{/js/app.js}"></script>
+<script src="https://code.highcharts.com/highcharts.js"></script>
+<script src="https://code.highcharts.com/modules/exporting.js"></script>
+<script th:inline="javascript">
+
+    $(function () {
+
+        var processed_json;
+        // = new Array();
+        $.getJSON('data', function (data) {
+            processed_json = data.data.length;
+            // processed_json.push([data.data.legnth]);
+            // for (i = 0; i < data.data.length; i++) {
+            //     console.log(data[i]);
+            //     processed_json.push([data.data[i].title, data.data[i].content.length]);
+            // }
+
+            chart = new Highcharts.chart('chart', {
+                chart: {
+                    type: 'spline',
+                    animation: Highcharts.svg,
+                    marginRight: 10,
+                    backgroundColor: {
+                        linearGradient: [0, 0, 500, 500],
+                        stops: [
+                            [0, 'rgb(255, 255, 255)'],
+                            [1, 'rgb(200, 200, 2000)']
+                        ]
+                    }, plotBackgroundColor: 'rgba(255, 255, 255, .9)',
+                    plotShadow: true,
+                    plotBorderWidth: 1,
+                    events: {	        		// 차트 이벤트
+                        load: function () {
+                            var series = this.series[0];	// Series의 index 0을 대입
+                            var series2 = this.series[1];	// Series의 index 0을 대입
+                            var series3 = this.series[2];	// Series의 index 0을 대입
+
+                            setInterval(function () {
+                                x = (new Date()).getTime(); 	// 현재 시간
+                                y = processed_json;			// 파싱한 데이터
+                                z = Math.random() * 100;
+                                z1 = Math.random() * 100;
+                                z2 = Math.random() * 100;
+
+
+                                series.addPoint([x, z], false, true);
+                                series2.addPoint([x, z1], false, true);
+                                series3.addPoint([x, z2], true, true);
+                                // series3.addPoint([x, y], false, true);
+                                console.log("X Data insert : " + y);
+                                console.log("X Data insert : " + z);
+
+                            }, 1000);			// interval end
+                        }		        		// load     end
+                    }
+                },
+                time: {
+                    useUTC: false
+                },
+                title: {
+                    text: '하이차트 연습'
+                },
+                subtitle: {
+                    text: 'Random의 수를 동적으로 생성하는 HighChart 연습'
+                },
+                // accessibility: {
+                //     announceNewData: {
+                //         enabled: true,
+                //         minAnnounceInterval: 15000,
+                //         announcementFormatter: function (allSeries, newSeries, newPoint) {
+                //             if (newPoint) {
+                //                 return 'New point added. Value: ' + newPoint.y;
+                //             }
+                //             return false;
+                //         }
+                //     }
+                // },
+                xAxis: {
+                    title: {
+                        text: '시간'
+                    },
+                    type: "datetime"
+                },
+                yAxis: {
+                    min: 0,
+                    max: 100,
+                    title: {
+                        text: '랜덤 숫자'
+                    }
+                },
+                plotOptions: {
+                    series: {
+                        marker: {
+                            enabled: false
+                        }
+                    }
+                },
+                series: [{
+                    name: '랜덤개수',
+                    data: (function () {
+                        // generate an array of random data
+                        var data = [],
+                            time = (new Date()).getTime(),
+                            i;
+
+                        for (i = -19; i <= 0; i += 1) {
+                            data.push({
+                                x: time + i * 1000,
+                                z: Math.random() * 100
+                            });
+                        }
+                        return data;
+                    }())
+                }, {
+                    name: '랜덤개수1',
+                    data: (function () {
+                        // generate an array of random data
+                        var data = [],
+                            time = (new Date()).getTime(),
+                            i;
+
+                        for (i = -19; i <= 0; i += 1) {
+                            data.push({
+                                x: time + i * 1000,
+                                z1: Math.random() * 100
+                            });
+                        }
+                        return data;
+                    }())
+                },{
+                    name: '랜덤개수2',
+                    data: (function () {
+                        // generate an array of random data
+                        var data = [],
+                            time = (new Date()).getTime(),
+                            i;
+
+                        for (i = -19; i <= 0; i += 1) {
+                            data.push({
+                                x: time + i * 1000,
+                                z2: Math.random() * 100
+                            });
+                        }
+                        return data;
+                    }())
+                }],
+                // [{
+                //     name: '게시물의 글자 수',
+                //     data: (function () {
+                //         // generate an array of random data
+                //         var data = [],
+                //             time = (new Date()).getTime(),
+                //             i;
+                //
+                //         for (i = -19; i <= 0; i += 1) {
+                //             data.push({
+                //                 x: time + i * 1000,
+                //                 z1:Math.random()*100
+                //             });
+                //         }
+                //         return data;
+                //     }())
+                // }],
+                tooltip: {valueSuffix: '개'},
+                credits: {
+                    enabled: false
+                },
+                exporting: {enabled: false}
+            });
+        });
+    });
+
+</script>
+
+<div th:insert="common/footer.html" id="footer"></div>
+</body>
+</html>

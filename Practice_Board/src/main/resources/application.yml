@@ -1,0 +1,36 @@
+#spring:
+#  profiles: local
+#  database:
+#    datasource:
+#      driver-class-name: oracle.jdbc.driver.OracleDriver
+#      url: jdbc:oracle:thin:@192.168.0.58:1521:xe
+#      username: board
+#      password: 1234
+#
+#  #  (대세라고 해서 yml에다 적음)
+#
+#  jpa:
+#    open-in-view: false
+##   웹 요청이 완료될 때까지 동일한 EntityManager를 갖도록 해줌 (성능과 확장상 면에서 좋음)
+#    show-sql: true
+##   콘솔에 JPA 실행 쿼리를 출력
+#    hibernate:
+#      format_sql: true
+##     콘솔에 출력되는 JPA 실행 쿼리를 가독성 있게 표현
+#      ddl-auto: create
+##     서버 restart 시 TABLE정보를 reset 시킴
+
+logging:
+  level:
+    org:
+      hibernate:
+        SQL: DEBUG
+        type:
+          descriptor:
+            sql:
+              BasicBinder: TRACE
+#           SQL에서 물음표로 표기된 부분을 로그로 출력해서 확인할 수 있음
+server:
+  error:
+    include-exception: true
+    include-stacktrace: always
